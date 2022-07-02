@@ -11,7 +11,7 @@ var ErrInvalidString = errors.New("invalid string")
 
 func Unpack(pack string) (string, error) {
 	r := []rune(pack)
-	res := ""
+	var res strings.Builder
 	for i, c := range r {
 		if i == 0 && unicode.IsDigit(c) {
 			return "", ErrInvalidString
@@ -27,8 +27,10 @@ func Unpack(pack string) (string, error) {
 					count = cnt
 				}
 			}
-			res += strings.Repeat(string(c), count)
+			for j := 0; j < count; j++ {
+				res.WriteRune(c)
+			}
 		}
 	}
-	return res, nil
+	return res.String(), nil
 }
