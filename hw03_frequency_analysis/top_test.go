@@ -43,6 +43,11 @@ var text = `Как видите, он  спускается  по  лестни�
 	посидеть у огня и послушать какую-нибудь интересную сказку.
 		В этот вечер...`
 
+
+var test1 = "я, - ты, - он, - она! - вместе дружная сЕмья? Когда-нибудь тро-п тест"
+
+var test2 = "I, - you, - hi, - she! - all friendly family? any word test"
+
 func TestTop10(t *testing.T) {
 	t.Run("no words in empty string", func(t *testing.T) {
 		require.Len(t, Top10(""), 0)
@@ -77,6 +82,70 @@ func TestTop10(t *testing.T) {
 				"то",        // 4
 			}
 			require.Equal(t, expected, Top10(text))
+		}
+	})
+
+	t.Run("test with '-'", func(t *testing.T) {
+		if taskWithAsteriskIsCompleted {
+			expected := []string{
+				"вместе", 
+				"дружная", 
+				"когда-нибудь", 
+				"он", 
+				"она", 
+				"семья", 
+				"тест", 
+				"тро-п", 
+				"ты", 
+				"я",
+			}
+			require.Equal(t, expected, Top10(test1))
+		} else {
+			expected := []string{
+				"-",
+				"Когда-нибудь", 
+				"вместе", 
+				"дружная", 
+				"он,", 
+				"она!", 
+				"сЕмья?", 
+				"тест", 
+				"тро-п", 
+				"ты,", 
+			}
+			require.Equal(t, expected, Top10(test1))
+		}
+	})
+
+	t.Run("test with '-' english", func(t *testing.T) {
+		if taskWithAsteriskIsCompleted {
+			expected := []string{
+				"all", 
+				"any", 
+				"family", 
+				"friendly", 
+				"hi", 
+				"i", 
+				"she", 
+				"test", 
+				"word", 
+				"you",
+			}
+			require.Equal(t, expected, Top10(test2))
+		} else {
+			expected := []string{
+				"-",
+				"I,", 
+				"all", 
+				"any", 
+				"family?", 
+				"friendly", 
+				"hi,", 
+				"she!", 
+				"test", 
+				"word", 
+			}
+			require.Equal(t, expected, Top10(test2))
 		}
 	})
 }
