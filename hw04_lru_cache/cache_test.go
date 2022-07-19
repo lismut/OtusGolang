@@ -50,7 +50,81 @@ func TestCache(t *testing.T) {
 	})
 
 	t.Run("purge logic", func(t *testing.T) {
-		// Write me
+		// - на логику выталкивания элементов из-за размера очереди
+		// (например: n = 3, добавили 4 элемента - 1й из кэша вытолкнулся);
+		c := NewCache(3)
+
+		wasInCache := c.Set("aaa", 100)
+		require.False(t, wasInCache)
+
+		wasInCache = c.Set("bbb", 200)
+		require.False(t, wasInCache)
+
+		wasInCache = c.Set("ccc", 300)
+		require.False(t, wasInCache)
+
+		wasInCache = c.Set("ddd", 400)
+		require.False(t, wasInCache)
+		
+		wasInCache = c.Set("aaa", 100)
+		require.False(t, wasInCache)
+	})
+
+	t.Run("purge logic with actuality", func(t *testing.T) {
+		// - на логику выталкивания давно используемых элементов
+		// (например: n = 3, добавили 3 элемента, обратились несколько раз к разным элементам:
+		// изменили значение, получили значение и пр. - добавили 4й элемент,
+		// из первой тройки вытолкнется тот элемент, что был затронут наиболее давно).
+		c := NewCache(3)
+
+		wasInCache := c.Set("aaa", 100)
+		require.False(t, wasInCache)
+
+		wasInCache = c.Set("bbb", 200)
+		require.False(t, wasInCache)
+
+		wasInCache = c.Set("ccc", 300)
+		require.False(t, wasInCache)
+
+		oldItem, ok := c.Get("aaa")
+		require.True(t, ok)
+		require.Equal(t, 100, oldItem)
+		
+		wasInCache = c.Set("ddd", 400)
+		require.False(t, wasInCache)
+
+		_, ok = c.Get("bbb")
+		require.False(t, ok)
+	})
+
+	t.Run("purge logic with actuality - 2", func(t *testing.T) {
+		// - на логику выталкивания давно используемых элементов
+		// (например: n = 3, добавили 3 элемента, обратились несколько раз к разным элементам:
+		// изменили значение, получили значение и пр. - добавили 4й элемент,
+		// из первой тройки вытолкнется тот элемент, что был затронут наиболее давно).
+		c := NewCache(3)
+
+		wasInCache := c.Set("aaa", 100)
+		require.False(t, wasInCache)
+
+		wasInCache = c.Set("bbb", 200)
+		require.False(t, wasInCache)
+
+		wasInCache = c.Set("ccc", 300)
+		require.False(t, wasInCache)
+
+		ok := c.Set("aaa", 700)
+		require.True(t, ok)
+		
+		wasInCache = c.Set("ddd", 400)
+		require.False(t, wasInCache)
+
+		_, ok = c.Get("bbb")
+		require.False(t, ok)
+
+		val, ok2 := c.Get("aaa")
+		require.True(t, ok2)
+		require.Equal(t, 700, val)
 	})
 }
 
