@@ -17,61 +17,62 @@ type ListItem struct {
 }
 
 type list struct {
-	First* ListItem
-	Last* ListItem
+	First  *ListItem
+	Last   *ListItem
 	Length int
 }
 
-func (l *list)Len() int {
+func (l *list) Len() int {
 	return l.Length
 }
 
-func (l *list)Front() *ListItem {
+func (l *list) Front() *ListItem {
 	return l.First
 }
 
-func (l *list)Back() *ListItem {
+func (l *list) Back() *ListItem {
 	return l.Last
 }
 
-func (l *list)PushFront(v interface{}) *ListItem {
+func (l *list) PushFront(v interface{}) *ListItem {
 	NewFront := ListItem{v, nil, nil}
 	if l.Front() != nil {
 		l.Front().Prev = &NewFront
 		NewFront.Next = l.Front()
 	} else {
-		l.Last = &NewFront	
+		l.Last = &NewFront
 	}
 	l.First = &NewFront
 	l.Length++
 	return l.Front()
 }
 
-func (l *list)PushBack(v interface{}) *ListItem {
+func (l *list) PushBack(v interface{}) *ListItem {
 	NewBack := ListItem{v, nil, nil}
 	if l.Back() != nil {
 		l.Back().Next = &NewBack
 		NewBack.Prev = l.Back()
-	}else {
-		l.First = &NewBack	
+	} else {
+		l.First = &NewBack
 	}
 	l.Last = &NewBack
 	l.Length++
 	return l.Back()
 }
 
-func (l *list)Remove(i *ListItem) {
+func (l *list) Remove(i *ListItem) {
 	if i.Value != nil {
-		if i.Prev == nil && i.Next == nil {
+		switch {
+		case i.Prev == nil && i.Next == nil:
 			l.First = nil
 			l.Last = nil
-		} else if i.Prev == nil {
+		case i.Prev == nil:
 			i.Next.Prev = nil
 			l.First = i.Next
-		} else if i.Next == nil {
+		case i.Next == nil:
 			i.Prev.Next = nil
 			l.Last = i.Prev
-		} else {
+		default:
 			i.Next.Prev = i.Prev
 			i.Prev.Next = i.Next
 		}
@@ -80,7 +81,7 @@ func (l *list)Remove(i *ListItem) {
 	}
 }
 
-func (l *list)MoveToFront(i *ListItem) {
+func (l *list) MoveToFront(i *ListItem) {
 	l.Remove((i))
 	l.PushFront(i.Value)
 }
