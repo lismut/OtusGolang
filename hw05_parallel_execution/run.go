@@ -4,7 +4,6 @@ import (
 	"errors"
 	"sync"
 	"sync/atomic"
-	//"fmt"
 )
 
 var ErrErrorsLimitExceeded = errors.New("errors limit exceeded")
@@ -19,7 +18,7 @@ func Run(tasks []Task, n, m int) error {
 	errCount := int32(0)
 	wg.Add(n)
 	for i := 0; i < n; i++ {
-		go func() error {
+		go func() {
 			defer wg.Done()
 			for task := range taskCh {
 				res := task()
@@ -27,7 +26,6 @@ func Run(tasks []Task, n, m int) error {
 					atomic.AddInt32(&errCount, 1)
 				}
 			}
-			return nil
 		}()
 	}
 
