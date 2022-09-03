@@ -18,27 +18,27 @@ func Run(tasks []Task, n, m int) error {
 	taskCh := make(chan Task)
 	errCount := int32(0)
 	wg.Add(n)
-	for i:= 0; i < n; i++ {
+	for i := 0; i < n; i++ {
 		go func() error {
 			defer wg.Done()
 			for task := range taskCh {
 				res := task()
-				if res != nil { 
+				if res != nil {
 					atomic.AddInt32(&errCount, 1)
 				}
 			}
 			return nil
-		}() 
+		}()
 	}
 
 	for _, task := range tasks {
-		if (atomic.LoadInt32(&errCount) < int32(m)) {
+		if atomic.LoadInt32(&errCount) < int32(m) {
 			taskCh <- task
 		}
 	}
 	close(taskCh)
 	wg.Wait()
-	if (errCount >= int32(m)) {
+	if errCount >= int32(m) {
 		return ErrErrorsLimitExceeded
 	}
 	return nil

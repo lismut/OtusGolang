@@ -109,13 +109,13 @@ func TestRun(t *testing.T) {
 			returnErrCh <- Run(tasks, workersCount, workersCount)
 		}()
 
-		require.Eventually(t, func () bool {
+		require.Eventually(t, func() bool {
 			return atomic.LoadInt32(&gorotinesCount) == int32(workersCount)
 		}, time.Second, time.Millisecond)
 
 		close(waitCh)
 		var runErr error
-		require.Eventually(t, func () bool {
+		require.Eventually(t, func() bool {
 			select {
 			case runErr = <-returnErrCh:
 				return true
