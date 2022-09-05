@@ -67,4 +67,62 @@ func TestRun(t *testing.T) {
 		require.Equal(t, runTasksCount, int32(tasksCount), "not all tasks were completed")
 		require.LessOrEqual(t, int64(elapsedTime), int64(sumTime/2), "tasks were run sequentially?")
 	})
+	t.Run("tasks with m==0", func(t *testing.T) {
+		tasksCount := 10
+		tasks := make([]Task, 0, tasksCount)
+
+		var runTasksCount int32
+
+		for i := 0; i < tasksCount; i++ {
+			err := fmt.Errorf("error from task %d", i)
+			tasks = append(tasks, func() error {
+				time.Sleep(time.Millisecond * time.Duration(rand.Intn(100)))
+				atomic.AddInt32(&runTasksCount, 1)
+				return err
+			})
+		}
+
+		workersCount := 12
+		maxErrorsCount := 0
+		err := Run(tasks, workersCount, maxErrorsCount)
+
+		require.Truef(t, errors.Is(err, ErrErrorsLimitExceeded), "actual err - %v", err)
+		require.LessOrEqual(t, runTasksCount, int32(workersCount+maxErrorsCount), "extra tasks were started")
+	})
+	t.Run("parallel execution", func(t *testing.T) {
+		tasksCount := 5
+		workersCount := tasksCount
+		var gorotinesCount int32
+		tasks := make([]Task, tasksCount)
+		waitCh := make(chan int)
+
+		for i := 0; i < tasksCount; i++ {
+			tasks[i] = func() error {
+				atomic.AddInt32(&gorotinesCount, 1)
+				<-waitCh
+				return nil
+			}
+		}
+
+		returnErrCh := make(chan error, 1)
+		go func() {
+			returnErrCh <- Run(tasks, workersCount, workersCount)
+		}()
+
+		require.Eventually(t, func() bool {
+			return atomic.LoadInt32(&gorotinesCount) == int32(workersCount)
+		}, time.Second, time.Millisecond)
+
+		close(waitCh)
+		var runErr error
+		require.Eventually(t, func() bool {
+			select {
+			case runErr = <-returnErrCh:
+				return true
+			default:
+				return false
+			}
+		}, time.Second, time.Millisecond)
+		require.NoError(t, runErr)
+	})
 }
